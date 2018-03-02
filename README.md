@@ -6,10 +6,6 @@ Write (very basic) [three.js](https://threejs.org/) sketches in Haskell
 
 You will need GHC and [Haste](https://haste-lang.org/).
 
-### Installing
-
-writing...
-
 ## Writing your own sketches.
 
 A sketch is divided in two .hs files: a *scene* and an *update*
@@ -67,10 +63,10 @@ import ThreeUpdate
 Your animation will be a function of type
 
 ```haskell
-myFirstUpdate :: Double -> ThreeAnimation ()
+myFirstUpdate :: Double -> Double -> Double -> ThreeAnimation ()
 ```
 
-this function describes your objects transformations frame-by-frame. That is, this function will be called each frame and passed the frame number as an argument. Sketches will be run at 30fps.
+this function describes your objects transformations frame-by-frame. That is, this function will be called each frame and passed the frame number as first argument. Sketches will be run at 30fps. Second and third arguments are the mouse X position and mouse Y position (ranging between -1 and 1). Mouse position is useful not only for interactive sketches but also for debugging.
 
 You can now set the position of the camera and rotate the cube by the Y axis as follows
 
@@ -98,4 +94,26 @@ If things go south you can always base your sketch on *sketches/sceneTest.hs* an
 
 ## Compiling and running your sketch
 
-writing...
+In the main directory you will find two scripts: *compile.sh* and *setup.sh* (if necessary make them executable).
+
+To compile your previously made sketch run
+
+```
+./compile.sh sketches/myFirstScene.sh sketches/myFirstUpdate.sh
+```
+
+Check for errors, and if everything is okay run
+
+```
+./setup.sh
+```
+
+This will set your sketch up for running. Check for errors, if your scene has no camera, for example, error will pop up at this time.
+
+To see your sketch just open index.html in your (preferably modern) browser.
+
+### Some notes...
+
+An http server is recommended. Node.js provides [http-server package](https://www.npmjs.com/package/http-server) which is simple enough.
+
+*resources/js/SKETCH.js* is the file exported by your Haskell scene. You can manually (Javascript) modify your scene as the code is pretty clear. Modifying your update function is impossible as Haste exports unreadable code.
