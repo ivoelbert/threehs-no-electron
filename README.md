@@ -71,12 +71,12 @@ this function describes your objects transformations frame-by-frame. That is, th
 You can now set the position of the camera and rotate the cube by the Y axis as follows
 
 ```haskell
-myFirstUpdate frame = do
-                      newAnimation
-                      setPosition "camera" (vector 0 2 3)
-                      setUp "camera" (vector 0 1 0)
-                      lookAt "camera" (vector 0 0 0)
-                      rotateOnAxis "cube" (vector 0 1 0) 0.05
+myFirstUpdate frame mouseX mouseY = do
+                                    newAnimation
+                                    setPosition "camera" (vector 0 2 3)
+                                    setUp "camera" (vector 0 1 0)
+                                    lookAt "camera" (vector 0 0 0)
+                                    rotateOnAxis "cube" (vector 0 1 0) 0.05
 ```
 
 Finally write your main function which will export your update function
