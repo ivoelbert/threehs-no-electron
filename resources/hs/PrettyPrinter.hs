@@ -53,16 +53,17 @@ printObj (name, ThreeCamera camera) = printCamera name camera
 
 
 printMesh :: String -> Mesh -> Doc
-printMesh name (Mesh geom mat) = (printGeometry name geom) <>
-                                 text "\n" <>
-                                 (printMaterial name mat) <>
-                                 text "\n" <>
-                                 text ("let " ++ name ++ "Mesh = new THREE.Mesh( " ++
-                                 name ++ "Geometry, " ++
-                                 name ++ "Material );") <>
-                                 text "\n" <>
-                                 text (name ++ "Mesh.name = \"" ++ name ++ "\";\n") <>
-                                 text ("scene.add( " ++ name ++ "Mesh );\n")
+printMesh name (Mesh geom mat) = let varName = name ++ "Mesh"
+                                 in (printGeometry name geom) <>
+                                    text "\n" <>
+                                    (printMaterial name mat) <>
+                                    text "\n" <>
+                                    text ("let " ++ varName ++ " = new THREE.Mesh( " ++
+                                    name ++ "Geometry, " ++
+                                    name ++ "Material );") <>
+                                    text "\n" <>
+                                    text (varName ++ ".name = \"" ++ name ++ "\";\n") <>
+                                    text ("scene.add( " ++ varName ++ " );\n")
 
 
 
@@ -139,31 +140,35 @@ let nameLight = new THREE.AmbientLight( c, i );
 scene.add( amblight );
 --}
 printLight name (AmbientLight {lightColor = c, intensity = i}) =
-    text ("let " ++ name ++ "Light = new THREE.AmbientLight( ") <>
-    printColor c <>
-    text (", " ++ (show i) ++ " );\n") <>
-    text (name ++ "Light.name = \"" ++ name ++ "\";\n") <>
-    text ("scene.add( " ++ name ++ "Light );\n")
+    let varName = name ++ "Light"
+    in text ("let " ++ varName ++ " = new THREE.AmbientLight( ") <>
+       printColor c <>
+       text (", " ++ (show i) ++ " );\n") <>
+       text (varName ++ ".name = \"" ++ name ++ "\";\n") <>
+       text ("scene.add( " ++ varName ++ " );\n")
 
 printLight name (DirectionalLight {lightColor = c, intensity = i, target = t}) =
-    text ("let " ++ name ++ "Light = new THREE.DirectionalLight( ") <>
-    printColor c <>
-    text (", " ++ (show i) ++ " );\n") <>
-    text (name ++ "Light.name = \"" ++ name ++ "\";\n") <>
-    text ("scene.add( " ++ name ++ "Light );\n\n") <>
-    text ("let " ++ name ++ "Target = new THREE.Object3D();\n") <>
-    text (name ++ "Target.position.set( " ++ (show (vx t)) ++ ", " ++ (show (vy t)) ++ ", " ++ (show (vy t)) ++ " );\n") <>
-    text ("scene.add( " ++ name ++ "Target );\n") <>
-    text (name ++ "Light.target = " ++ name ++ "Target;\n")
+    let varName = name ++ "Light"
+        targetName = name ++ "Target"
+        in text ("let " ++ varName ++ " = new THREE.DirectionalLight( ") <>
+           printColor c <>
+           text (", " ++ (show i) ++ " );\n") <>
+           text (varName ++ ".name = \"" ++ name ++ "\";\n") <>
+           text ("scene.add( " ++ varName ++ " );\n\n") <>
+           text ("let " ++ targetName ++ " = new THREE.Object3D();\n") <>
+           text (targetName ++ ".position.set( " ++ (show (vx t)) ++ ", " ++ (show (vy t)) ++ ", " ++ (show (vy t)) ++ " );\n") <>
+           text ("scene.add( " ++ targetName ++ " );\n") <>
+           text (varName ++ ".target = " ++ targetName ++ ";\n")
 
 printLight name (PointLight {lightColor = c, intensity = i, distance = dist, decay = dec}) =
-    text ("let " ++ name ++ "Light = new THREE.PointLight( ") <>
-    printColor c <>
-    text (", " ++ (show i)) <>
-    text (", " ++ (show dist)) <>
-    text (", " ++ (show dec) ++ " );\n") <>
-    text (name ++ "Light.name = " ++ name ++ ";\n") <>
-    text ("scene.add( " ++ name ++ "Light );\n")
+    let varName = name ++ "Light"
+    in text ("let " ++ varName ++ " = new THREE.PointLight( ") <>
+       printColor c <>
+       text (", " ++ (show i)) <>
+       text (", " ++ (show dist)) <>
+       text (", " ++ (show dec) ++ " );\n") <>
+       text (varName ++ ".name = " ++ name ++ ";\n") <>
+       text ("scene.add( " ++ varName ++ " );\n")
 
 printCamera :: String -> Camera -> Doc
 {--
@@ -179,11 +184,12 @@ printCamera name (PerspectiveCamera {fov = fo, near = n, far = fa}) =
     text ("scene.add( camera );\n")
 
 {--
-let nameCamera = new THREE.OrthographicCamera( window.innerWidth / - 2, window.innerWidth / 2, window.innerHeight / 2, window.innerHeight / - 2, 1, 1000 );
+let nameCamera = new THREE.OrthographicCamera( width / - 2, width / 2, height / 2, height / - 2, 1, 1000 );
 --}
-printCamera name (OrthographicCamera {near = n, far = f}) =
+printCamera name (OrthographicCamera {orthoWidth = w, near = n, far = f}) =
+    text ("let orthoHeight = " ++ (show w) ++ " * window.innerHeight/window.innerWidth;\n") <>
     text ("let camera = new THREE.OrthographicCamera( ") <>
-    text ("window.innerWidth / - 2, window.innerWidth / 2, window.innerHeight / 2, window.innerHeight / - 2") <>
+    text ((show w) ++ " / - 2, " ++ (show w) ++ " / 2, orthoHeight / 2, orthoHeight / - 2") <>
     text (", " ++ (show n)) <>
     text (", " ++ (show f) ++ " );\n") <>
     text ("camera.name = \"" ++ name ++ "\";\n") <>

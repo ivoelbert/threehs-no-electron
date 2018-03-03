@@ -254,6 +254,7 @@ data Camera = PerspectiveCamera {
                                   far :: Double
                                 }
             | OrthographicCamera {
+                                   orthoWidth :: Double,
                                    near :: Double,
                                    far :: Double
                                  } deriving Show
@@ -264,5 +265,5 @@ createCamera camera = return (ThreeCamera camera)
 perspectiveCamera :: Double -> Double -> Double -> ThreeScene Object3D
 perspectiveCamera fo n fa = createCamera (PerspectiveCamera {fov = fo, near = n, far = fa})
 
-orthographicCamera :: Double -> Double -> ThreeScene Object3D
-orthographicCamera n f = createCamera (OrthographicCamera {near = n, far = f})
+orthographicCamera :: Double -> Double -> Double -> ThreeScene Object3D
+orthographicCamera w n f = createCamera (OrthographicCamera {orthoWidth = w, near = n, far = f})
