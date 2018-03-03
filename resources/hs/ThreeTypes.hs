@@ -61,9 +61,9 @@ data ObjTransform = SetPosition Vector3 --Setea la posicion del objeto
                   | SetScale Vector3 --Setea la escala del objeto en los ejes x y z
                   | ApplyMatrix Matrix4 deriving Show --Premultiplica la matriz de transformacion del objeto por la indicada
 
-newtype ThreeAnimation a = Anim (a, [(String, ObjTransform)]) deriving Show
+newtype ThreeAnimation a = Anim (a, [(String, [ObjTransform])]) deriving Show
 
-runThreeAnimation :: ThreeAnimation a -> (a, [(String, ObjTransform)])
+runThreeAnimation :: ThreeAnimation a -> (a, [(String, [ObjTransform])])
 runThreeAnimation (Anim p) = p
 
 instance Functor ThreeAnimation where
@@ -76,7 +76,18 @@ instance Applicative ThreeAnimation where
 instance Monad ThreeAnimation where
   return x = Anim (x, [])
   Anim (x, xs) >>= f = let Anim (x', xs') = f x
-                        in Anim (x', xs' ++ xs)
+                        in Anim (x', joinTransforms xs' xs)
+
+
+joinTransforms :: [(String, [ObjTransform])] -> [(String, [ObjTransform])] -> [(String, [ObjTransform])]
+joinTransforms [] ts = ts
+joinTransforms (x:xs) ts = joinTransforms xs (joinTransform x ts)
+
+joinTransform :: (String, [ObjTransform]) -> [(String, [ObjTransform])] -> [(String, [ObjTransform])]
+joinTransform (name, transf) [] = [(name, transf)]
+joinTransform (name, transf) ((n, ts):xs) = if name == n
+                                           then (n, transf ++ ts):xs
+                                           else (n, ts):(joinTransform (name, transf) xs)
 
 newAnimation :: ThreeAnimation ()
 newAnimation = Anim ((), [])
@@ -84,7 +95,7 @@ newAnimation = Anim ((), [])
 
 -- Transformations
 addTransform :: String -> ObjTransform -> ThreeAnimation ()
-addTransform name transf = Anim ( (), [(name, transf)])
+addTransform name transf = Anim ( (), [(name, [transf])])
 
 setPosition :: String -> Vector3 -> ThreeAnimation ()
 setPosition name pos = addTransform name (SetPosition pos)

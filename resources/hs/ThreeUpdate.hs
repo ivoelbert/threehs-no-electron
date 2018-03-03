@@ -40,26 +40,12 @@ propertyToJson (ApplyMatrix xss) =
   Dict [(pack "type", (Str (pack "applyMatrix"))), (pack "matrix", matrixToJson xss)]
 
 tupleToJson :: (String, [ObjTransform]) -> (JSString, JSON)
-tupleToJson (s, obj) = let jsonArr = Prelude.map propertyToJson obj in (pack s, Arr jsonArr)
+tupleToJson (s, obj) = let jsonArr = Prelude.map propertyToJson (Prelude.reverse obj) in (pack s, Arr jsonArr)
 
 listToJson :: [(String, [ObjTransform])] -> JSON
 listToJson xs = Dict (Prelude.map tupleToJson xs)
 
--- Batching...
-batchTransformations :: [(String, ObjTransform)] -> [(String, [ObjTransform])]
-batchTransformations xs = let names = getNames xs in Prelude.map (\n -> (n, getTransforms n xs)) names
-
-getTransforms :: String -> [(String, ObjTransform)] -> [ObjTransform]
-getTransforms name [] = []
-getTransforms name ((n, transf):xs) = if name == n then transf:(getTransforms name xs) else (getTransforms name xs)
-
-getNames :: [(String, ObjTransform)] -> [String]
-getNames xs = mkUniq $ Prelude.map (Prelude.fst) xs
-
-mkUniq :: Ord a => [a] -> [a]
-mkUniq = toList . (Data.Set.fromList)
-
 
 -- Interfaz:
 createUpdateFunction :: (Double -> Double -> Double -> ThreeAnimation ()) -> (Double -> Double -> Double -> JSString)
-createUpdateFunction f = (\frame mX mY -> let list = batchTransformations (Prelude.reverse (Prelude.snd (runThreeAnimation (f frame mX mY)))) in (encodeJSON (listToJson list)))
+createUpdateFunction f = (\frame mX mY -> let list = Prelude.snd (runThreeAnimation (f frame mX mY)) in (encodeJSON (listToJson list)))
