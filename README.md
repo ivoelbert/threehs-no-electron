@@ -33,13 +33,16 @@ Set up a camera, an ambient light and create a cube
 ```haskell
 myFirstScene = do newScene
                   cam <- perspectiveCamera 75 0.1 100
-                  addToScene "camera" cam
+                  camPosition <- setPosition (vector 0 2 3)
+                  camUp <- setUp (vector 0 1 0)
+                  camLookAt <- lookAt (vector 0 0 0)
+                  addToScene "camera" cam [camPosition, camUp, camLookAt]
                   light <- ambientLight (hex "fff7d1") 1
-                  addToScene "light" light
+                  addToScene "light" light []
                   cubeGeom <- boxGeometry 1 1 1
                   cubeMat <- standardMaterial (hex "e56244") (hex "000000") 1 0.4
                   cubeMesh <- createMesh cubeGeom cubeMat
-                  addToScene "cube" cubeMesh
+                  addToScene "cube" cubeMesh []
 ```
 
 and write your main function which must export your scene to *src/resources/js/SKETCH.js* as follows
@@ -73,9 +76,6 @@ You can now set the position of the camera and rotate the cube by the Y axis as 
 ```haskell
 myFirstUpdate frame mouseX mouseY = do
                                     newAnimation
-                                    setPosition "camera" (vector 0 2 3)
-                                    setUp "camera" (vector 0 1 0)
-                                    lookAt "camera" (vector 0 0 0)
                                     rotateOnAxis "cube" (vector 0 1 0) 0.05
 ```
 
