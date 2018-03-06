@@ -29,6 +29,7 @@ let mesaMaterial = new THREE.MeshStandardMaterial( {
 let mesaMesh = new THREE.Mesh( mesaGeometry, mesaMaterial );
 mesaMesh.name = "mesa";
 scene.add( mesaMesh );
+mesaMesh.position.set( 0.0, -0.5, 0.0 );
 
 let ambLightLight = new THREE.AmbientLight( 0xf9e0a9, 0.5 );
 ambLightLight.name = "ambLight";
@@ -42,10 +43,14 @@ let dirLightTarget = new THREE.Object3D();
 dirLightTarget.position.set( 0.0, 0.0, 0.0 );
 scene.add( dirLightTarget );
 dirLightLight.target = dirLightTarget;
+dirLightLight.position.set( -3.0, 3.0, 5.0 );
 
 let camera = new THREE.PerspectiveCamera( 75.0, window.innerWidth/window.innerHeight, 0.1, 100.0 );
 camera.name = "camara";
 scene.add( camera );
+camera.position.set( 0.0, 3.0, 5.0 );
+camera.up.set( 0.0, 1.0, 0.0 );
+camera.lookAt( 0.0, 0.0, 0.0 );
 
 ////////////////////////////////////////////////////////
 // END PRINTED FROM HASKELL

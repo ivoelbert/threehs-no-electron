@@ -33,9 +33,6 @@ data Vector3 = Vector3 { vx :: Double,
 vec0 :: Vector3
 vec0 = Vector3 {vx = 0, vy = 0, vz = 0}
 
-listToVector :: [Double] -> Vector3
-listToVector (x:y:z:xs) = Vector3 {vx = x, vy = y, vz = z}
-
 vector :: Double -> Double -> Double -> Vector3
 vector x y z = Vector3 {vx = x, vy = y, vz = z}
 
@@ -49,9 +46,6 @@ hex :: String -> Color
 hex h = HEX h
 
 
-{---------------------------------------------------------------------------------------------------}
-{-- Representa un frame de animacion en el que a un objeto se le aplican ciertas transformaciones --}
-{---------------------------------------------------------------------------------------------------}
 data ObjTransform = SetPosition Vector3 --Setea la posicion del objeto
                   | TranslateOnAxis Vector3 Double --Traslada el objeto cierta distancia por un vector
                   | ApplyQuaternion Quaternion --Aplica la rotacion representada por el cuaternion
@@ -60,6 +54,12 @@ data ObjTransform = SetPosition Vector3 --Setea la posicion del objeto
                   | LookAt Vector3 --Rota un objeto para que "mire" hacia un punto.
                   | SetScale Vector3 --Setea la escala del objeto en los ejes x y z
                   | ApplyMatrix Matrix4 deriving Show --Premultiplica la matriz de transformacion del objeto por la indicada
+
+
+
+{---------------------------------------------------------------------------------------------------}
+{-- Representa un frame de animacion en el que a un objeto se le aplican ciertas transformaciones --}
+{---------------------------------------------------------------------------------------------------}
 
 newtype ThreeAnimation a = Anim (a, [(String, [ObjTransform])]) deriving Show
 
@@ -89,48 +89,19 @@ joinTransform (name, transf) ((n, ts):xs) = if name == n
                                            then (n, transf ++ ts):xs
                                            else (n, ts):(joinTransform (name, transf) xs)
 
-newAnimation :: ThreeAnimation ()
-newAnimation = Anim ((), [])
 
-
--- Transformations
-addTransform :: String -> ObjTransform -> ThreeAnimation ()
-addTransform name transf = Anim ( (), [(name, [transf])])
-
-setPosition :: String -> Vector3 -> ThreeAnimation ()
-setPosition name pos = addTransform name (SetPosition pos)
-
-translateOnAxis :: String -> Vector3 -> Double -> ThreeAnimation ()
-translateOnAxis name dir dist = addTransform name (TranslateOnAxis dir dist)
-
-applyQuaternion :: String -> Quaternion -> ThreeAnimation ()
-applyQuaternion name quat = addTransform name (ApplyQuaternion quat)
-
-rotateOnAxis :: String -> Vector3 -> Double -> ThreeAnimation ()
-rotateOnAxis name axis angle = addTransform name (RotateOnAxis axis angle)
-
-setUp :: String -> Vector3 -> ThreeAnimation ()
-setUp name up = addTransform name (SetUp up)
-
-lookAt :: String -> Vector3 -> ThreeAnimation ()
-lookAt name pos = addTransform name (LookAt pos)
-
-setScale :: String -> Vector3 -> ThreeAnimation ()
-setScale name scl = addTransform name (SetScale scl)
-
-applyMatrix :: String -> Matrix4 -> ThreeAnimation ()
-applyMatrix name mat = addTransform name (ApplyMatrix mat)
-
-{-----------------------------------------------------------------------------------------------------------------}
-{-- Representa una escena. Basicamente una lista de objetos con un nombre para poder actualizar en la animacion --}
-{-----------------------------------------------------------------------------------------------------------------}
+{-----------------------------------------------------------------------------------------------------}
+{-- Representa una escena. Una lista de objetos con un nombre para poder actualizar en la animacion --}
+{-----------------------------------------------------------------------------------------------------}
 data Object3D = ThreeMesh Mesh | ThreeLight Light | ThreeCamera Camera deriving Show
 
-newtype ThreeScene a = Scene (a, [(String, Object3D)]) deriving Show
+newtype ThreeScene a = Scene (a, [(String, Object3D, [ObjTransform])]) deriving Show
 
-runThreeScene :: ThreeScene a -> (a, [(String, Object3D)])
+runThreeScene :: ThreeScene a -> (a, [(String, Object3D, [ObjTransform])])
 runThreeScene (Scene p) = p
 
+getSceneList :: ThreeScene a -> [(String, Object3D, [ObjTransform])]
+getSceneList scn = snd (runThreeScene scn)
 
 instance Functor ThreeScene where
   fmap = liftM
@@ -143,15 +114,6 @@ instance Monad ThreeScene where
   return x = Scene (x, [])
   Scene (x, xs) >>= f = let Scene (x', xs') = f x
                         in Scene (x', xs' ++ xs)
-
-newScene :: ThreeScene ()
-newScene = Scene ((), [])
-
-getSceneList :: ThreeScene a -> [(String, Object3D)]
-getSceneList scn = snd (runThreeScene scn)
-
-addToScene :: String -> Object3D -> ThreeScene ()
-addToScene name obj = Scene ((), [(name, obj)])
 
 
 -- Geometries
@@ -178,24 +140,6 @@ data Geometry = BoxGeometry { width :: Double,
                                 tubularSegments :: Int
                               } deriving Show
 
-createGeometry :: Geometry -> ThreeScene Geometry
-createGeometry geom = return geom
-
-boxGeometry :: Double -> Double -> Double -> ThreeScene Geometry
-boxGeometry w h d = createGeometry (BoxGeometry {width = w, height = h, depth = d})
-
-coneGeometry :: Double -> Double -> Int -> ThreeScene Geometry
-coneGeometry r h rs = createGeometry (ConeGeometry {radius = r, height = h, radialSegments = rs})
-
-cylinderGeometry :: Double -> Double -> Double -> Int -> ThreeScene Geometry
-cylinderGeometry rt rb h rs = createGeometry (CylinderGeometry {radiusTop = rt, radiusBottom = rb, height = h, radialSegments = rs})
-
-sphereGeometry :: Double -> Int -> Int -> ThreeScene Geometry
-sphereGeometry r ws hs = createGeometry (SphereGeometry {radius = r, widthSegments = ws, heightSegments = hs})
-
-torusGeometry :: Double -> Double -> Int -> Int -> ThreeScene Geometry
-torusGeometry r t rs ts = createGeometry (TorusGeometry {radius = r, tube = t, radialSegments = rs, tubularSegments = ts})
-
 
 -- Materials
 data Material = StandardMaterial { materialColor :: Color,
@@ -204,18 +148,9 @@ data Material = StandardMaterial { materialColor :: Color,
                                    metalness :: Double
                                  } deriving Show
 
-createMaterial :: Material -> ThreeScene Material
-createMaterial mat = return mat
-
-standardMaterial :: Color -> Color -> Double -> Double -> ThreeScene Material
-standardMaterial c e r m = createMaterial (StandardMaterial {materialColor = c, emissive = e, roughness = r, metalness = m})
-
 
 -- Mesh
 data Mesh = Mesh Geometry Material deriving Show
-
-createMesh :: Geometry -> Material -> ThreeScene Object3D
-createMesh geom mat = return (ThreeMesh (Mesh geom mat))
 
 
 -- Lights
@@ -234,18 +169,6 @@ data Light = AmbientLight { lightColor :: Color,
                           decay :: Double
                         } deriving Show
 
-createLight :: Light -> ThreeScene Object3D
-createLight light = return (ThreeLight light)
-
-ambientLight :: Color -> Double -> ThreeScene Object3D
-ambientLight c i = createLight (AmbientLight {lightColor = c, intensity = i})
-
-directionalLight :: Color -> Double -> Vector3 -> ThreeScene Object3D
-directionalLight c i t = createLight (DirectionalLight {lightColor = c, intensity = i, target = t})
-
-pointLight :: Color -> Double -> Double -> Double -> ThreeScene Object3D
-pointLight c i di de = createLight (PointLight {lightColor = c, intensity = i, distance = di, decay = de})
-
 
 -- Cameras
 data Camera = PerspectiveCamera {
@@ -258,12 +181,3 @@ data Camera = PerspectiveCamera {
                                    near :: Double,
                                    far :: Double
                                  } deriving Show
-
-createCamera :: Camera -> ThreeScene Object3D
-createCamera camera = return (ThreeCamera camera)
-
-perspectiveCamera :: Double -> Double -> Double -> ThreeScene Object3D
-perspectiveCamera fo n fa = createCamera (PerspectiveCamera {fov = fo, near = n, far = fa})
-
-orthographicCamera :: Double -> Double -> Double -> ThreeScene Object3D
-orthographicCamera w n f = createCamera (OrthographicCamera {orthoWidth = w, near = n, far = f})

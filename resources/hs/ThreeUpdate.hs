@@ -1,5 +1,15 @@
 module ThreeUpdate (
+  newAnimation,
+  setPosition,
+  translateOnAxis,
+  applyQuaternion,
+  rotateOnAxis,
+  setUp,
+  lookAt,
+  setScale,
+  applyMatrix,
   createUpdateFunction,
+
   module ThreeTypes,
   module Haste.Foreign,
   module Haste.Prim
@@ -49,3 +59,37 @@ listToJson xs = Dict (Prelude.map tupleToJson xs)
 -- Interfaz:
 createUpdateFunction :: (Double -> Double -> Double -> ThreeAnimation ()) -> (Double -> Double -> Double -> JSString)
 createUpdateFunction f = (\frame mX mY -> let list = Prelude.snd (runThreeAnimation (f frame mX mY)) in (encodeJSON (listToJson list)))
+
+
+-- Animation
+newAnimation :: ThreeAnimation ()
+newAnimation = Anim ((), [])
+
+
+-- Transformations
+addTransform :: String -> ObjTransform -> ThreeAnimation ()
+addTransform name transf = Anim ( (), [(name, [transf])])
+
+setPosition :: String -> Vector3 -> ThreeAnimation ()
+setPosition name pos = addTransform name (SetPosition pos)
+
+translateOnAxis :: String -> Vector3 -> Double -> ThreeAnimation ()
+translateOnAxis name dir dist = addTransform name (TranslateOnAxis dir dist)
+
+applyQuaternion :: String -> Quaternion -> ThreeAnimation ()
+applyQuaternion name quat = addTransform name (ApplyQuaternion quat)
+
+rotateOnAxis :: String -> Vector3 -> Double -> ThreeAnimation ()
+rotateOnAxis name axis angle = addTransform name (RotateOnAxis axis angle)
+
+setUp :: String -> Vector3 -> ThreeAnimation ()
+setUp name up = addTransform name (SetUp up)
+
+lookAt :: String -> Vector3 -> ThreeAnimation ()
+lookAt name pos = addTransform name (LookAt pos)
+
+setScale :: String -> Vector3 -> ThreeAnimation ()
+setScale name scl = addTransform name (SetScale scl)
+
+applyMatrix :: String -> Matrix4 -> ThreeAnimation ()
+applyMatrix name mat = addTransform name (ApplyMatrix mat)
