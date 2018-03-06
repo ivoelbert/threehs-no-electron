@@ -16,7 +16,7 @@ Adds the object *obj* with name *name* to the scene, with initial transformation
 
 ## Mesh
 
-A *mesh* is an object you can see in your scene. As stated, it is needed to specify the geometry of the mesh (where are the vertices en 3D space) and a material (how its surface looks)
+A *mesh* is an object you can see in your scene. As stated, it is needed to specify the geometry of the mesh (where are the vertices in 3D space) and a material (how its surface looks)
 
 ```haskell
 createMesh :: Geometry -> Material -> ThreeScene Object3D
@@ -204,7 +204,7 @@ Sets an object's scale along its local *x*, *y* and *z* axes
 ```haskell
 applyMatrix :: Matrix4 -> ThreeScene ObjTransform
 
-applyMatrix *matrix*
+applyMatrix matrix
 ```
 Applies a *matrix* to an object. That is, the object's local transformation matrix is premultiplied by *matrix*
 
