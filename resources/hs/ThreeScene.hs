@@ -1,6 +1,5 @@
 module ThreeScene (
   -- Scene
-  newScene,
   addToScene,
 
   -- Geometries
@@ -43,10 +42,8 @@ module ThreeScene (
 import ThreeTypes
 import PrettyPrinter
 
--- Scene
-newScene :: ThreeScene ()
-newScene = Scene ((), [])
 
+-- Scene
 addToScene :: String -> Object3D -> [ObjTransform] -> ThreeScene ()
 addToScene name obj transf = Scene ((), [(name, obj, transf)])
 

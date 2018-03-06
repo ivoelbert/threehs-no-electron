@@ -1,5 +1,4 @@
 module ThreeUpdate (
-  newAnimation,
   setPosition,
   translateOnAxis,
   applyQuaternion,
@@ -26,8 +25,8 @@ import Haste.Prim (toJSStr)
 
 import Data.Set
 
--- Transformo a JSON
 
+-- Transform to JSON
 matrixToJson :: Matrix4 -> JSON
 matrixToJson xss = Arr (Prelude.map (\x -> Num x) (Prelude.concat xss))
 
@@ -56,14 +55,9 @@ listToJson :: [(String, [ObjTransform])] -> JSON
 listToJson xs = Dict (Prelude.map tupleToJson xs)
 
 
--- Interfaz:
+-- Interface:
 createUpdateFunction :: (Double -> Double -> Double -> ThreeAnimation ()) -> (Double -> Double -> Double -> JSString)
 createUpdateFunction f = (\frame mX mY -> let list = Prelude.snd (runThreeAnimation (f frame mX mY)) in (encodeJSON (listToJson list)))
-
-
--- Animation
-newAnimation :: ThreeAnimation ()
-newAnimation = Anim ((), [])
 
 
 -- Transformations

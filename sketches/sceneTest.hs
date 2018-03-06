@@ -2,7 +2,6 @@ import ThreeScene
 
 scene :: ThreeScene ()
 scene = do
-        newScene
         cam <- perspectiveCamera 75 0.1 100
         camPosition <- setPosition (vector 0 3 5)
         camSetUp <- setUp (vector 0 1 0)
