@@ -266,6 +266,7 @@ is a compact way of writing the identity matrix, too.
 
 ```haskell
 rgb :: Double -> Double -> Double -> Color
+
 rgb red green blue
 ```
 Describes a color by its *red*, *green* and *blue* values (*rgb 1 0 0* for full red, for example).
@@ -273,5 +274,7 @@ Describes a color by its *red*, *green* and *blue* values (*rgb 1 0 0* for full 
 
 ```haskell
 hex :: String -> Color
+
+hex str
 ```
 Describes a color by its hexadecimal representation (*"0000ff"* for full green, for example).
