@@ -31,8 +31,7 @@ myFirstScene :: ThreeScene ()
 Set up a camera, an ambient light and create a cube
 
 ```haskell
-myFirstScene = do newScene
-                  cam <- perspectiveCamera 75 0.1 100
+myFirstScene = do cam <- perspectiveCamera 75 0.1 100
                   camPosition <- setPosition (vector 0 2 3)
                   camUp <- setUp (vector 0 1 0)
                   camLookAt <- lookAt (vector 0 0 0)
@@ -75,7 +74,6 @@ You can now set the position of the camera and rotate the cube by the Y axis as 
 
 ```haskell
 myFirstUpdate frame mouseX mouseY = do
-                                    newAnimation
                                     rotateOnAxis "cube" (vector 0 1 0) 0.05
 ```
 

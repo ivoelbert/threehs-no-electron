@@ -2,9 +2,25 @@
 
 What you can do in your scene and update will be specified here
 
-# Scene
+# SCENE
 
 A scene is basically a set of *objects* with a name and some initial transformations. The mentioned *objects* can be *meshes*, *lights* or a *camera*. One and only one *camera* is needed to render your scene, and at least a *light* is recommended to shine on your *meshes*
+
+Your scene must be of type
+
+```haskell
+scene :: ThreeScene ()
+```
+
+And it is exported as follows
+
+```haskell
+main :: IO ()
+main = do printScene scene
+```
+
+
+## Adding objects to your scene
 
 ```haskell
 addToScene :: String -> Object3D -> [ObjTransform] -> ThreeScene ()
@@ -209,7 +225,100 @@ applyMatrix matrix
 Applies a *matrix* to an object. That is, the object's local transformation matrix is premultiplied by *matrix*
 
 
-## Vectors, matrices and other useful thingies
+
+# UPDATE
+
+The update function is where your objects in the scene are animated, this functions is of type
+
+```haskell
+update :: Double -> Double -> Double -> ThreeAnimation ()
+
+update frame mouseX mouseY
+```
+It is called every frame and passed three arguments: *frame* which is just the frame number, *mouseX* and *mouseY* representing the position of the mouse in the screen (each between -1 and 1).
+
+You export your update function this way
+
+```haskell
+main = do
+       export "updates" $ createUpdateFunction update
+```
+
+As you can see, it is important that you create an exportable function by calling *createUpdateFunction* and passed your update as its only argument. You must also export it with name *"updates"*.
+
+
+## Transformations
+
+The update function is a sequence of transformations applied to the objects you previously added to your scene. Even if you manually added an object in your javascript file you can animate it here.
+
+Just as in your scene you can set some initial transformations to your objects, here you can perform the same transformations, but in a slightly different way. You need to specify to which object the transformation will be applied by passing its *name* as an argument. With this, any manually added object can be set a name an be animated by the update function.
+
+```haskell
+setPosition :: String -> Vector3 -> ThreeScene ObjTransform
+
+setPosition name pos
+```
+Sets an object's position in 3D space.
+
+
+```haskell
+translateOnAxis :: String -> Vector3 -> Double -> ThreeScene ObjTransform
+
+translateOnAxis name direction distance
+```
+Translates an object a certain *distance* in a *direction* (in local space)
+
+
+```haskell
+applyQuaternion :: String -> Quaternion -> ThreeScene ObjTransform
+
+applyQuaternion name quaternion
+```
+Applies the rotation described by a *quaternion* to an object.
+
+
+```haskell
+rotateOnAxis :: String -> Vector3 -> Double -> ThreeScene ObjTransform
+
+rotateOnAxis name axis angle
+```
+Rotates an object around a certain *axis* (in local space) about *angle* radians
+
+
+```haskell
+setUp :: String -> Vector3 -> ThreeScene ObjTransform
+
+setUp name up
+```
+Sets an object's up vector. This is usually needed to use *lookAt*.
+
+
+```haskell
+lookAt :: String -> Vector3 -> ThreeScene ObjTransform
+
+lookAt name pos
+```
+Aligns an object so its +z axis points towards *pos* (in world space). It is recommended to set the object's up vector to determine the orientation of the object after looking at a something.
+
+
+```haskell
+setScale :: String -> Vector3 -> ThreeScene ObjTransform
+
+setScale name scl
+```
+Sets an object's scale along its local *x*, *y* and *z* axes
+
+
+```haskell
+applyMatrix :: String -> Matrix4 -> ThreeScene ObjTransform
+
+applyMatrix name matrix
+```
+Applies a *matrix* to an object. That is, the object's local transformation matrix is premultiplied by *matrix*
+
+
+
+# Vectors, matrices and other useful thingies
 
 ### Vector3
 
